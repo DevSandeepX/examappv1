@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000
 const app = express()
 app.use(express.json())
 app.use(cors({
-    origin:'https://gyansthaly.onrender.com'
+    origin:'https://gyansthalyv1.onrender.com'
 }))
 connectDb();
 app.get("/", (req, res) => {
