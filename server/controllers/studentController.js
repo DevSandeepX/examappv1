@@ -1,4 +1,4 @@
-import User from '../models/User.js';  // Assuming the User model is imported from here
+import User from '../models/user.js';  // Assuming the User model is imported from here
 
 // Add Student Controller
 export const addStudent = async (req, res) => {
