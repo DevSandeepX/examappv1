@@ -154,27 +154,40 @@ export const verifyStudent = async (req, res) => {
     const student = await User.findOne({ rollno });
 
     // Check if student exists and password matches
-    if (student && password === 'giit@123') {
+    if (student && password === process.env.EXAM_PASS || 'giit@123') {
+      // Check if the exam has already been finished
+      if (student.examStatus === 'finished') {
+        return res.status(200).json({
+          success: true,
+          examFinished: true, // Indicate that the exam is already finished
+          message: '❌ Exam has already been finished!',
+          rollno: student.rollno,
+        });
+      }
+
+      // Student verified successfully, and exam not finished
       return res.status(200).json({
         success: true,
-        message: 'Student verified successfully!',
+        examFinished: false, // Exam not finished, allow student to proceed
+        message: '✅ Student verified successfully!',
         rollno: student.rollno,
-        id:student._id
+        id: student._id,
       });
     } else {
       return res.status(401).json({
         success: false,
-        message: 'Invalid roll number or password!',
+        message: '❌ Invalid roll number or password!',
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error('Error verifying student:', error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error!',
+      message: '❌ Internal server error!',
     });
   }
 };
+
 
 
 

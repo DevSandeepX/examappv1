@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from 'react-router-dom';
+
 const VerifyStudent = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     rollno: '',
     password: '',
@@ -34,7 +35,7 @@ const VerifyStudent = () => {
     try {
       setLoading(true); // Show loading state
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-      
+
       // Send API request to verify student
       const response = await axios.post(`${backendUrl}/api/user/verify-student`, {
         rollno,
@@ -42,9 +43,15 @@ const VerifyStudent = () => {
       });
 
       if (response.data.success) {
-        setMessage(`✅ Verified! Roll No: ${response.data.rollno}`);
-        navigate(`/exam/${response.data.rollno}`)
-
+        
+        if (response.data.examFinished) {
+          // Exam already finished
+          alert('❌ Your exam has already been finished!');
+          return;
+        } else {
+          setMessage(`✅ Verified! Roll No: ${response.data.rollno}`);
+          navigate(`/exam/${response.data.rollno}`); // Redirect to exam page
+        }
       } else {
         setMessage('❌ Invalid roll number or password!');
       }
@@ -102,7 +109,9 @@ const VerifyStudent = () => {
         {message && (
           <div
             className={`mt-4 p-2 text-center rounded ${
-              message.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              message.includes('✅')
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
             }`}
           >
             {message}

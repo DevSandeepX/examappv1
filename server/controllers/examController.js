@@ -8,12 +8,12 @@ export const finishExam = async (req, res) => {
     const user = await User.findOne({ rollno });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({success:false, message: 'User not found' });
     }
 
     // Check if the exam is already finished
     if (user.examStatus === 'finished') {
-      return res.status(200).json({ message: 'Exam already finished for this user.' });
+      return res.status(200).json({ success:false, message: 'Exam already finished for this user.' });
     }
 
     // Calculate total attempted questions
@@ -32,13 +32,14 @@ export const finishExam = async (req, res) => {
     await user.save();
 
     res.status(200).json({
+      success:true,
       message: 'Exam finished successfully',
       examResult: user.examResult,
       examStatus: user.examStatus,
     });
   } catch (error) {
     console.error('Error finishing exam:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({success:true, message: 'Internal server error' });
   }
 };
 

@@ -15,6 +15,7 @@ import Login from './pages/admin/Login';
 import VerifyStudent from './pages/client/VerifyStudent';
 import Footer from './components/client/Footer';
 import AddStudent from './pages/admin/AddStudent';
+import ExamFinished from './pages/client/ExamFinished';
 
 
 
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/courses" element={<Courses />} />
         <Route path="/online-test" element={<OnlineTest />} />
         <Route path="/exam/:rollno" element={<Exam />} />
+        <Route path="/finish-exam" element={<ExamFinished />} />
         <Route path="/auth-student" element={<VerifyStudent />} />
 
         {/* Admin Routes */}

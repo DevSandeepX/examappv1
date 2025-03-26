@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams , useNavigate} from "react-router-dom";
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Exam = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { rollno } = useParams();
   const [questions, setQuestions] = useState([]);
   const [timeLeft, setTimeLeft] = useState(90 * 60); // 1 hour 30 mins in seconds
@@ -17,9 +17,7 @@ const Exam = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await axios.get(
-          backendUrl + '/api/question/suffled-question'
-        );
+        const res = await axios.get(backendUrl + '/api/question/suffled-question');
         setQuestions(res.data.questions);
       } catch (error) {
         console.error('❌ Error fetching questions:', error);
@@ -70,8 +68,20 @@ const Exam = () => {
     }
   };
 
+  // Handle jump to a specific question
+  const jumpToQuestion = (index) => {
+    setCurrentQuestion(index);
+  };
+
   // Handle exam submission
   const handleSubmit = async () => {
+    const confirmSubmit = window.confirm('✅ Are you sure you want to finish the exam?');
+
+    if (!confirmSubmit) {
+      console.log('❌ Exam submission canceled.');
+      return;
+    }
+
     const unansweredQuestions = questions
       .filter((q) => !answers[q._id])
       .map((q) => q._id);
@@ -82,12 +92,7 @@ const Exam = () => {
     // Check answers against correct ones
     questions.forEach((q) => {
       if (answers[q._id]) {
-        const selectedOptionIndex = [
-          q.option1,
-          q.option2,
-          q.option3,
-          q.option4,
-        ].indexOf(answers[q._id]) + 1;
+        const selectedOptionIndex = [q.option1, q.option2, q.option3, q.option4].indexOf(answers[q._id]) + 1;
 
         if (selectedOptionIndex === q.answer) {
           rightAns++;
@@ -106,23 +111,25 @@ const Exam = () => {
         unanswered: unansweredQuestions,
       });
 
-      const res = await axios.post(backendUrl + '/api/exam/finish-exam', {
-        rollno,
-        rightAns,
-        wrongAns,
-        unanswered: unansweredQuestions,
-      }, {
-        headers: {
-          "Content-Type": "application/json",
+      const res = await axios.post(
+        backendUrl + '/api/exam/finish-exam',
+        {
+          rollno,
+          rightAns,
+          wrongAns,
+          unanswered: unansweredQuestions,
         },
-      });
-      
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       console.log('✅ Response:', res.data);
 
       if (res.data.success) {
-        alert('✅ Exam submitted successfully!');
-        navigate('/');
+        navigate('/finish-exam');
       } else {
         alert(res.data.message);
       }
@@ -142,82 +149,101 @@ const Exam = () => {
   const currentQ = questions[currentQuestion];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 relative">
-      {/* Finish Exam Button on Top Right */}
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={handleSubmit}
-          className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition duration-200"
-        >
-          📝 Finish Exam
-        </button>
+    <div className="min-h-screen bg-gray-100 p-4 flex relative">
+      {/* Main Content */}
+      <div className="w-3/4 pr-8">
+        {/* Finish Exam Button on Top Right */}
+        <div className="absolute top-4 right-4">
+          <button
+            onClick={handleSubmit}
+            className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition duration-200"
+          >
+            📝 Finish Exam
+          </button>
+        </div>
+
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-lg font-bold text-gray-700">
+            ⏳ Time Remaining: {formatTime(timeLeft)}
+          </div>
+          <div className="text-lg font-bold text-blue-600 flex gap-5">
+            <p>👤</p> <p>{rollno || 'Unknown'}</p>
+          </div>
+        </div>
+
+        {/* Question Card */}
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">
+            {currentQuestion + 1}. {currentQ.question}
+          </h3>
+          <div className="space-y-2">
+            {[currentQ.option1, currentQ.option2, currentQ.option3, currentQ.option4].map(
+              (option, idx) => (
+                <label
+                  key={idx}
+                  className={`block cursor-pointer p-2 border rounded-lg ${
+                    answers[currentQ._id] === option ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`question-${currentQ._id}`}
+                    value={option}
+                    checked={answers[currentQ._id] === option}
+                    onChange={() => handleOptionChange(currentQ._id, option)}
+                    className="mr-2"
+                  />
+                  {option}
+                </label>
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={handlePrevious}
+            disabled={currentQuestion === 0}
+            className={`bg-gray-500 text-white px-4 py-2 rounded-lg ${
+              currentQuestion === 0 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-600'
+            }`}
+          >
+            ⏮️ Previous
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={currentQuestion === questions.length - 1}
+            className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${
+              currentQuestion === questions.length - 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-blue-600'
+            }`}
+          >
+            ⏭️ Next
+          </button>
+        </div>
       </div>
 
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="text-lg font-bold text-gray-700">
-          ⏳ Time Remaining: {formatTime(timeLeft)}
+      {/* Sidebar Navigation */}
+      <div className="w-1/4 bg-white p-4 rounded-lg shadow-lg overflow-y-auto h-screen">
+        <h3 className="text-lg font-semibold mb-4">📚 Question Navigator</h3>
+        <div className="grid grid-cols-5 gap-3">
+          {questions.map((q, index) => (
+            <button
+              key={q._id}
+              onClick={() => jumpToQuestion(index)}
+              className={`w-10 h-10 rounded-full text-center font-bold ${
+                index === currentQuestion
+                  ? 'bg-blue-500 text-white'
+                  : answers[q._id]
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
-        <div className="text-lg font-bold text-blue-600">
-          👤 Roll No: {rollno || 'Unknown'}
-        </div>
-      </div>
-
-      {/* Question Card */}
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-semibold mb-4">
-          {currentQuestion + 1}. {currentQ.question}
-        </h3>
-        <div className="space-y-2">
-          {[currentQ.option1, currentQ.option2, currentQ.option3, currentQ.option4].map(
-            (option, idx) => (
-              <label
-                key={idx}
-                className={`block cursor-pointer p-2 border rounded-lg ${
-                  answers[currentQ._id] === option
-                    ? 'bg-blue-100 border-blue-500'
-                    : 'border-gray-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={`question-${currentQ._id}`}
-                  value={option}
-                  checked={answers[currentQ._id] === option}
-                  onChange={() => handleOptionChange(currentQ._id, option)}
-                  className="mr-2"
-                />
-                {option}
-              </label>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={handlePrevious}
-          disabled={currentQuestion === 0}
-          className={`bg-gray-500 text-white px-4 py-2 rounded-lg ${
-            currentQuestion === 0
-              ? 'cursor-not-allowed opacity-50'
-              : 'hover:bg-gray-600'
-          }`}
-        >
-          ⏮️ Previous
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={currentQuestion === questions.length - 1}
-          className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${
-            currentQuestion === questions.length - 1
-              ? 'cursor-not-allowed opacity-50'
-              : 'hover:bg-blue-600'
-          }`}
-        >
-          ⏭️ Next
-        </button>
       </div>
     </div>
   );
