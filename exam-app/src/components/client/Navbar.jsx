@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import logo from "../../assets/logo.png"
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -12,7 +12,7 @@ const Navbar = () => {
     <nav className="bg-blue-500 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white text-2xl font-bold">
-          <Link to="/">Gyansthaly</Link>
+          <Link to="/"><img src={logo} alt="Gyansthaly" /></Link>
         </div>
         <div className="hidden md:flex items-center space-x-4">
           <Link to="/" className="text-white hover:text-gray-200">Home</Link>
