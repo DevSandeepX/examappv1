@@ -34,7 +34,7 @@ const VerifyStudent = () => {
 
     try {
       setLoading(true); // Show loading state
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
       // Send API request to verify student
       const response = await axios.post(`${backendUrl}/api/user/verify-student`, {
